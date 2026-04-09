@@ -1,0 +1,655 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<abapGit version="v1.0.0" serializer="LCL_OBJECT_FUGR" serializer_version="v1.0.0">
+ <asx:abap xmlns:asx="http://www.sap.com/abapxml" version="1.0">
+  <asx:values>
+   <AREAT>KAI FI Data Transfer</AREAT>
+   <INCLUDES>
+    <SOBJ_NAME>LZKAI_FG_RFCTOP</SOBJ_NAME>
+    <SOBJ_NAME>SAPLZKAI_FG_RFC</SOBJ_NAME>
+   </INCLUDES>
+   <FUNCTIONS>
+    <item>
+     <FUNCNAME>ZKAI_RFC</FUNCNAME>
+     <REMOTE_CALL>R</REMOTE_CALL>
+     <SHORT_TEXT>KAI FI Demo Data</SHORT_TEXT>
+     <IMPORT>
+      <RSIMP>
+       <PARAMETER>IV_BUKRS</PARAMETER>
+       <OPTIONAL>X</OPTIONAL>
+       <TYP>BUKRS</TYP>
+      </RSIMP>
+      <RSIMP>
+       <PARAMETER>IV_ADRC</PARAMETER>
+       <OPTIONAL>X</OPTIONAL>
+       <TYP>FLAG</TYP>
+      </RSIMP>
+      <RSIMP>
+       <PARAMETER>IV_KNA1</PARAMETER>
+       <OPTIONAL>X</OPTIONAL>
+       <TYP>FLAG</TYP>
+      </RSIMP>
+      <RSIMP>
+       <PARAMETER>IV_LFA1</PARAMETER>
+       <OPTIONAL>X</OPTIONAL>
+       <TYP>FLAG</TYP>
+      </RSIMP>
+      <RSIMP>
+       <PARAMETER>IV_KNB1</PARAMETER>
+       <OPTIONAL>X</OPTIONAL>
+       <TYP>FLAG</TYP>
+      </RSIMP>
+      <RSIMP>
+       <PARAMETER>IV_KNKK</PARAMETER>
+       <OPTIONAL>X</OPTIONAL>
+       <TYP>FLAG</TYP>
+      </RSIMP>
+      <RSIMP>
+       <PARAMETER>IV_KNVV</PARAMETER>
+       <OPTIONAL>X</OPTIONAL>
+       <TYP>FLAG</TYP>
+      </RSIMP>
+      <RSIMP>
+       <PARAMETER>IV_LFB1</PARAMETER>
+       <OPTIONAL>X</OPTIONAL>
+       <TYP>FLAG</TYP>
+      </RSIMP>
+      <RSIMP>
+       <PARAMETER>IV_LFBK</PARAMETER>
+       <OPTIONAL>X</OPTIONAL>
+       <TYP>FLAG</TYP>
+      </RSIMP>
+      <RSIMP>
+       <PARAMETER>IV_BNKA</PARAMETER>
+       <OPTIONAL>X</OPTIONAL>
+       <TYP>FLAG</TYP>
+      </RSIMP>
+      <RSIMP>
+       <PARAMETER>IV_TIBAN</PARAMETER>
+       <OPTIONAL>X</OPTIONAL>
+       <TYP>FLAG</TYP>
+      </RSIMP>
+      <RSIMP>
+       <PARAMETER>IV_PAYR</PARAMETER>
+       <OPTIONAL>X</OPTIONAL>
+       <TYP>FLAG</TYP>
+      </RSIMP>
+      <RSIMP>
+       <PARAMETER>IV_BUT000</PARAMETER>
+       <OPTIONAL>X</OPTIONAL>
+       <TYP>FLAG</TYP>
+      </RSIMP>
+      <RSIMP>
+       <PARAMETER>IV_BUT020</PARAMETER>
+       <OPTIONAL>X</OPTIONAL>
+       <TYP>FLAG</TYP>
+      </RSIMP>
+      <RSIMP>
+       <PARAMETER>IV_BUT0ID</PARAMETER>
+       <OPTIONAL>X</OPTIONAL>
+       <TYP>FLAG</TYP>
+      </RSIMP>
+      <RSIMP>
+       <PARAMETER>IV_DFKKBPTAXNUM</PARAMETER>
+       <OPTIONAL>X</OPTIONAL>
+       <TYP>FLAG</TYP>
+      </RSIMP>
+      <RSIMP>
+       <PARAMETER>IV_BKPF</PARAMETER>
+       <OPTIONAL>X</OPTIONAL>
+       <TYP>FLAG</TYP>
+      </RSIMP>
+      <RSIMP>
+       <PARAMETER>IV_BSEG</PARAMETER>
+       <OPTIONAL>X</OPTIONAL>
+       <TYP>FLAG</TYP>
+      </RSIMP>
+      <RSIMP>
+       <PARAMETER>IV_ACDOCA</PARAMETER>
+       <OPTIONAL>X</OPTIONAL>
+       <TYP>FLAG</TYP>
+      </RSIMP>
+      <RSIMP>
+       <PARAMETER>IV_FAGLFLEXA</PARAMETER>
+       <OPTIONAL>X</OPTIONAL>
+       <TYP>FLAG</TYP>
+      </RSIMP>
+      <RSIMP>
+       <PARAMETER>IV_BSIS</PARAMETER>
+       <OPTIONAL>X</OPTIONAL>
+       <TYP>FLAG</TYP>
+      </RSIMP>
+      <RSIMP>
+       <PARAMETER>IV_ANLA</PARAMETER>
+       <OPTIONAL>X</OPTIONAL>
+       <TYP>FLAG</TYP>
+      </RSIMP>
+      <RSIMP>
+       <PARAMETER>IV_ANEP</PARAMETER>
+       <OPTIONAL>X</OPTIONAL>
+       <TYP>FLAG</TYP>
+      </RSIMP>
+      <RSIMP>
+       <PARAMETER>IV_ANEK</PARAMETER>
+       <OPTIONAL>X</OPTIONAL>
+       <TYP>FLAG</TYP>
+      </RSIMP>
+      <RSIMP>
+       <PARAMETER>IV_TCURR</PARAMETER>
+       <OPTIONAL>X</OPTIONAL>
+       <TYP>FLAG</TYP>
+      </RSIMP>
+      <RSIMP>
+       <PARAMETER>IV_BELNR</PARAMETER>
+       <OPTIONAL>X</OPTIONAL>
+       <TYP>BELNR_D</TYP>
+      </RSIMP>
+      <RSIMP>
+       <PARAMETER>IV_LAST_DOCNR</PARAMETER>
+       <OPTIONAL>X</OPTIONAL>
+       <TYP>DOCNR</TYP>
+      </RSIMP>
+      <RSIMP>
+       <PARAMETER>IV_PACKAGESIZE</PARAMETER>
+       <DEFAULT>10000</DEFAULT>
+       <OPTIONAL>X</OPTIONAL>
+       <TYP>I</TYP>
+      </RSIMP>
+      <RSIMP>
+       <PARAMETER>IV_ADR6</PARAMETER>
+       <OPTIONAL>X</OPTIONAL>
+       <TYP>FLAG</TYP>
+      </RSIMP>
+      <RSIMP>
+       <PARAMETER>IV_ADR2</PARAMETER>
+       <OPTIONAL>X</OPTIONAL>
+       <TYP>FLAG</TYP>
+      </RSIMP>
+      <RSIMP>
+       <PARAMETER>IV_CMS_SGM</PARAMETER>
+       <OPTIONAL>X</OPTIONAL>
+       <TYP>FLAG</TYP>
+      </RSIMP>
+      <RSIMP>
+       <PARAMETER>IV_TOTALS</PARAMETER>
+       <OPTIONAL>X</OPTIONAL>
+       <TYP>FLAG</TYP>
+      </RSIMP>
+      <RSIMP>
+       <PARAMETER>IV_CMS</PARAMETER>
+       <OPTIONAL>X</OPTIONAL>
+       <TYP>FLAG</TYP>
+      </RSIMP>
+      <RSIMP>
+       <PARAMETER>IV_ITEM</PARAMETER>
+       <OPTIONAL>X</OPTIONAL>
+       <TYP>FLAG</TYP>
+      </RSIMP>
+     </IMPORT>
+     <TABLES>
+      <RSTBL>
+       <PARAMETER>ET_KNA1</PARAMETER>
+       <DBSTRUCT>KNA1</DBSTRUCT>
+       <OPTIONAL>X</OPTIONAL>
+      </RSTBL>
+      <RSTBL>
+       <PARAMETER>ET_KNB1</PARAMETER>
+       <DBSTRUCT>KNB1</DBSTRUCT>
+       <OPTIONAL>X</OPTIONAL>
+      </RSTBL>
+      <RSTBL>
+       <PARAMETER>ET_KNVV</PARAMETER>
+       <DBSTRUCT>KNVV</DBSTRUCT>
+       <OPTIONAL>X</OPTIONAL>
+      </RSTBL>
+      <RSTBL>
+       <PARAMETER>ET_LFA1</PARAMETER>
+       <DBSTRUCT>LFA1</DBSTRUCT>
+       <OPTIONAL>X</OPTIONAL>
+      </RSTBL>
+      <RSTBL>
+       <PARAMETER>ET_LFB1</PARAMETER>
+       <DBSTRUCT>LFB1</DBSTRUCT>
+       <OPTIONAL>X</OPTIONAL>
+      </RSTBL>
+      <RSTBL>
+       <PARAMETER>ET_LFBK</PARAMETER>
+       <DBSTRUCT>LFBK</DBSTRUCT>
+       <OPTIONAL>X</OPTIONAL>
+      </RSTBL>
+      <RSTBL>
+       <PARAMETER>ET_BNKA</PARAMETER>
+       <DBSTRUCT>BNKA</DBSTRUCT>
+       <OPTIONAL>X</OPTIONAL>
+      </RSTBL>
+      <RSTBL>
+       <PARAMETER>ET_TIBAN</PARAMETER>
+       <DBSTRUCT>TIBAN</DBSTRUCT>
+       <OPTIONAL>X</OPTIONAL>
+      </RSTBL>
+      <RSTBL>
+       <PARAMETER>ET_PAYR</PARAMETER>
+       <DBSTRUCT>PAYR</DBSTRUCT>
+       <OPTIONAL>X</OPTIONAL>
+      </RSTBL>
+      <RSTBL>
+       <PARAMETER>ET_BUT000</PARAMETER>
+       <DBSTRUCT>BUT000</DBSTRUCT>
+       <OPTIONAL>X</OPTIONAL>
+      </RSTBL>
+      <RSTBL>
+       <PARAMETER>ET_BUT020</PARAMETER>
+       <DBSTRUCT>BUT020</DBSTRUCT>
+       <OPTIONAL>X</OPTIONAL>
+      </RSTBL>
+      <RSTBL>
+       <PARAMETER>ET_BUT0ID</PARAMETER>
+       <DBSTRUCT>BUT0ID</DBSTRUCT>
+       <OPTIONAL>X</OPTIONAL>
+      </RSTBL>
+      <RSTBL>
+       <PARAMETER>ET_DFKKBPTAXNUM</PARAMETER>
+       <DBSTRUCT>DFKKBPTAXNUM</DBSTRUCT>
+       <OPTIONAL>X</OPTIONAL>
+      </RSTBL>
+      <RSTBL>
+       <PARAMETER>ET_BKPF</PARAMETER>
+       <DBSTRUCT>BKPF</DBSTRUCT>
+       <OPTIONAL>X</OPTIONAL>
+      </RSTBL>
+      <RSTBL>
+       <PARAMETER>ET_BSEG</PARAMETER>
+       <DBSTRUCT>BSEG</DBSTRUCT>
+       <OPTIONAL>X</OPTIONAL>
+      </RSTBL>
+      <RSTBL>
+       <PARAMETER>ET_ACDOCA</PARAMETER>
+       <DBSTRUCT>ACDOCA</DBSTRUCT>
+       <OPTIONAL>X</OPTIONAL>
+      </RSTBL>
+      <RSTBL>
+       <PARAMETER>ET_FAGLFLEXA</PARAMETER>
+       <DBSTRUCT>FAGLFLEXA</DBSTRUCT>
+       <OPTIONAL>X</OPTIONAL>
+      </RSTBL>
+      <RSTBL>
+       <PARAMETER>ET_ANLA</PARAMETER>
+       <DBSTRUCT>ANLA</DBSTRUCT>
+       <OPTIONAL>X</OPTIONAL>
+      </RSTBL>
+      <RSTBL>
+       <PARAMETER>ET_ANEP</PARAMETER>
+       <DBSTRUCT>ANEP</DBSTRUCT>
+       <OPTIONAL>X</OPTIONAL>
+      </RSTBL>
+      <RSTBL>
+       <PARAMETER>ET_ANEK</PARAMETER>
+       <DBSTRUCT>ANEK</DBSTRUCT>
+       <OPTIONAL>X</OPTIONAL>
+      </RSTBL>
+      <RSTBL>
+       <PARAMETER>ET_TCURR</PARAMETER>
+       <DBSTRUCT>TCURR</DBSTRUCT>
+       <OPTIONAL>X</OPTIONAL>
+      </RSTBL>
+      <RSTBL>
+       <PARAMETER>ET_KNKK</PARAMETER>
+       <DBSTRUCT>KNKK</DBSTRUCT>
+       <OPTIONAL>X</OPTIONAL>
+      </RSTBL>
+      <RSTBL>
+       <PARAMETER>ET_ADRC</PARAMETER>
+       <DBSTRUCT>ADRC</DBSTRUCT>
+       <OPTIONAL>X</OPTIONAL>
+      </RSTBL>
+      <RSTBL>
+       <PARAMETER>ET_ADR6</PARAMETER>
+       <DBSTRUCT>ADR6</DBSTRUCT>
+       <OPTIONAL>X</OPTIONAL>
+      </RSTBL>
+      <RSTBL>
+       <PARAMETER>ET_ADR2</PARAMETER>
+       <DBSTRUCT>ADR2</DBSTRUCT>
+       <OPTIONAL>X</OPTIONAL>
+      </RSTBL>
+      <RSTBL>
+       <PARAMETER>ET_CMS_SGM</PARAMETER>
+       <DBSTRUCT>UKMBP_CMS_SGM</DBSTRUCT>
+       <OPTIONAL>X</OPTIONAL>
+      </RSTBL>
+      <RSTBL>
+       <PARAMETER>ET_TOTALS</PARAMETER>
+       <DBSTRUCT>UKM_TOTALS</DBSTRUCT>
+       <OPTIONAL>X</OPTIONAL>
+      </RSTBL>
+      <RSTBL>
+       <PARAMETER>ET_CMS</PARAMETER>
+       <DBSTRUCT>UKMBP_CMS</DBSTRUCT>
+       <OPTIONAL>X</OPTIONAL>
+      </RSTBL>
+      <RSTBL>
+       <PARAMETER>ET_ITEM</PARAMETER>
+       <DBSTRUCT>UKM_ITEM</DBSTRUCT>
+       <OPTIONAL>X</OPTIONAL>
+      </RSTBL>
+     </TABLES>
+     <DOCUMENTATION>
+      <RSFDO>
+       <PARAMETER>IV_BUKRS</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Genel gösterge</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>IV_ADRC</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Adresler (merkezi adres yönetimi)</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>IV_KNA1</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Genel gösterge</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>IV_LFA1</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Genel gösterge</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>IV_KNB1</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Genel gösterge</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>IV_KNKK</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Genel gösterge</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>IV_KNVV</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Genel gösterge</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>IV_LFB1</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Genel gösterge</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>IV_LFBK</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Genel gösterge</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>IV_BNKA</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Genel gösterge</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>IV_TIBAN</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Genel gösterge</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>IV_PAYR</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Genel gösterge</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>IV_BUT000</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Genel gösterge</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>IV_BUT020</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Genel gösterge</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>IV_BUT0ID</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Genel gösterge</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>IV_DFKKBPTAXNUM</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Genel gösterge</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>IV_BKPF</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Genel gösterge</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>IV_BSEG</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Genel gösterge</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>IV_ACDOCA</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Genel gösterge</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>IV_FAGLFLEXA</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Genel gösterge</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>IV_BSIS</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Genel gösterge</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>IV_ANLA</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Genel gösterge</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>IV_ANEP</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Genel gösterge</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>IV_ANEK</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Genel gösterge</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>IV_TCURR</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Genel gösterge</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>IV_BELNR</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Kalem no.tayini: Malzeme belgesi - satınalma belgesi</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>IV_LAST_DOCNR</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Belge numarası</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>IV_PACKAGESIZE</PARAMETER>
+       <KIND>P</KIND>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>IV_ADR6</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Genel gösterge</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>IV_ADR2</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Genel gösterge</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>IV_CMS_SGM</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Genel gösterge</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>IV_TOTALS</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Genel gösterge</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>IV_CMS</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Genel gösterge</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>IV_ITEM</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Genel gösterge</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>ET_KNA1</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Müşteri ana verileri (genel veriler)</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>ET_KNB1</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Müşteri ana verileri (şirket kodu)</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>ET_KNVV</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Müşteri ana verileri satış verileri</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>ET_LFA1</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Satıcı ana verileri (genel bölüm)</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>ET_LFB1</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Satıcı ana verileri (şirket kodu)</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>ET_LFBK</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Satıcı ana verileri (banka ayrıntıları)</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>ET_BNKA</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Banka ana verileri</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>ET_TIBAN</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>IBAN</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>ET_PAYR</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Ödeme değişim ortamı dosyası</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>ET_BUT000</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Muhatap: Genel veriler I</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>ET_BUT020</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Muhatap : Adresler</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>ET_BUT0ID</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Muhatap: Tanıtıcı numaraları</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>ET_DFKKBPTAXNUM</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Muhataba ilişkin vergi numarası</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>ET_BKPF</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Muhasebe belge başlığı</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>ET_BSEG</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Muhasebe belgesinin bölümü</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>ET_ACDOCA</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Universal Journal Entry Line Items</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>ET_FAGLFLEXA</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Defteri kebir: Fiili münferit kalemler</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>ET_ANLA</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Duran varlık ana veri bölümü</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>ET_ANEP</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>DV münferit kalemleri</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>ET_ANEK</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Belge başlığı-DV kaydı</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>ET_TCURR</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Çeviri kurları</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>ET_KNKK</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Müşteri ana verileri kredi yönetimi: Kontrol alanı verileri</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>ET_ADRC</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Adresler (merkezi adres yönetimi)</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>ET_ADR6</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>E-posta adresleri (merkezi adres yönetimi)</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>ET_ADR2</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Telefon numaraları (merkezi adres yönetimi)</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>ET_CMS_SGM</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>SAP Credit Management: Master Data for Credit Account</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>ET_TOTALS</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>SAP Credit Management: Liability Totals</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>ET_CMS</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>SAP Credit Management: Credit Master Data for Partner</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>ET_ITEM</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Credit Management: Line Items</STEXT>
+      </RSFDO>
+     </DOCUMENTATION>
+    </item>
+   </FUNCTIONS>
+  </asx:values>
+ </asx:abap>
+</abapGit>
