@@ -58,13 +58,9 @@ FUNCTION zai_001_fm_get_partner.
       AND t1~bu_group           IN ('YDGD','YDGI','YIGD','YIGI')
       AND upper( replace( replace( replace( replace( replace( replace( name_org1,'Ç', 'C' ),'İ','I' ),'Ö','O' ),'Ü','U' ),'Ş','S' ), 'Ğ','G' ) ) IN  @ltr_name
       AND xblck                 EQ @space
-     INTO TABLE @DATA(lt_partner).
+     INTO TABLE @et_data.
 
-    LOOP AT lt_partner INTO DATA(ls_partner).
-      APPEND INITIAL LINE TO et_data ASSIGNING FIELD-SYMBOL(<ls_data>).
-      <ls_data> = CORRESPONDING #( BASE ( <ls_data> ) ls_partner ).
-    ENDLOOP.
-    IF sy-subrc NE 0.
+    IF et_data IS INITIAL.
 
       MESSAGE e013(zai) INTO lv_msg.
       PERFORM add_syst_mess_to_bapiret2 TABLES lt_return

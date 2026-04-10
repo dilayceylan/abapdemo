@@ -74,6 +74,12 @@ public section.
     exporting
       value(ET_RETURN) type ZAI_001_ST_RETURN
       value(ET_SALESORDER) type ZAI_001_TT_SALES_ORDER .
+  class-methods GET_EMPLOYEE_LIST
+    importing
+      value(IV_DATE) type BEGDA optional
+    exporting
+      value(ET_DATA) type ZAI_001_TT_EMPLOYEE
+      value(ET_RETURN) type ZAI_001_ST_RETURN .
 protected section.
 
   class-methods SET_STATICS
@@ -195,6 +201,18 @@ CLASS ZCL_KAI_API IMPLEMENTATION.
   ENDMETHOD.
 
 
+  METHOD get_employee_list.
+
+    CALL FUNCTION 'ZAI_001_FM_GET_EMPLOYEE_LIST'
+      EXPORTING
+        iv_date   = iv_date
+      IMPORTING
+        et_data   = et_data
+        et_return = et_return.
+
+  ENDMETHOD.
+
+
   METHOD get_ven_statement.
 
     CALL FUNCTION 'ZAI_001_FM_GET_VEN_STATEMENT'
@@ -295,6 +313,7 @@ METHOD if_http_extension~handle_request.
            frstid          TYPE zsd007_e001,
            adduserid       TYPE pernr_d,
            addmail         TYPE  ad_smtpadr,
+           anahtarTarih    TYPE  char10,
          END OF ty_pay.
 
   TYPES: BEGIN OF ty_statement_details,
@@ -785,6 +804,85 @@ METHOD if_http_extension~handle_request.
           CLEAR lv_json.
           lv_hata    = 'NoContent'.
           lv_hatamsj = 'İstenilen veri bulunamamıştır.'.
+        ENDIF.
+
+      WHEN 'GET_EMPLOYEE_LIST'.
+
+*----------------------------------------------------------------------*
+* Employee List Response Structure
+*----------------------------------------------------------------------*
+        TYPES: BEGIN OF ty_employee_details,
+                 personel_numarasi  TYPE string,
+                 ad                 TYPE string,
+                 soyad              TYPE string,
+                 calisma_gun_sayisi TYPE string,
+                 eposta             TYPE string,
+               END OF ty_employee_details.
+
+        TYPES: tt_employee_details TYPE STANDARD TABLE OF ty_employee_details WITH EMPTY KEY.
+
+        TYPES: BEGIN OF ty_employee_response,
+                 code              TYPE string,
+                 message           TYPE string,
+                 employee_details  TYPE tt_employee_details,
+               END OF ty_employee_response.
+
+        DATA: es_employee_response TYPE ty_employee_response,
+              ls_employee_detail   TYPE ty_employee_details,
+              et_employee          TYPE zai_001_tt_employee,
+              lv_emp_date          TYPE begda.
+
+*       Tarih donusumu (YYYY-MM-DD -> YYYYMMDD)
+        IF ls_pay-anahtartarih IS NOT INITIAL.
+          CONCATENATE ls_pay-anahtartarih+0(4)
+                      ls_pay-anahtartarih+5(2)
+                      ls_pay-anahtartarih+8(2)
+                 INTO lv_emp_date.
+        ELSE.
+          lv_emp_date = sy-datum.
+        ENDIF.
+
+        CALL METHOD (lv_methot)
+          EXPORTING
+            iv_date   = lv_emp_date
+          IMPORTING
+            et_data   = et_employee
+            et_return = et_return.
+
+        IF NOT et_employee IS INITIAL.
+
+          es_employee_response-code    = et_return-code.
+          es_employee_response-message = et_return-message.
+
+          LOOP AT et_employee INTO DATA(ls_emp).
+            CLEAR: ls_employee_detail.
+            ls_employee_detail-personel_numarasi  = ls_emp-pernr.
+            ls_employee_detail-ad                 = ls_emp-firstname.
+            ls_employee_detail-soyad              = ls_emp-lastname.
+            ls_employee_detail-calisma_gun_sayisi = |{ ls_emp-working_days }|.
+            ls_employee_detail-eposta             = ls_emp-email.
+            APPEND ls_employee_detail TO es_employee_response-employee_details.
+          ENDLOOP.
+
+          lv_json = /ui2/cl_json=>serialize(
+            data        = es_employee_response
+            pretty_name = /ui2/cl_json=>pretty_mode-camel_case
+            compress    = abap_false ).
+
+*         camelCase -> PascalCase
+          REPLACE ALL OCCURRENCES OF '"code"'               IN lv_json WITH '"Code"'.
+          REPLACE ALL OCCURRENCES OF '"message"'            IN lv_json WITH '"Message"'.
+          REPLACE ALL OCCURRENCES OF '"employeeDetails"'    IN lv_json WITH '"EmployeeDetails"'.
+          REPLACE ALL OCCURRENCES OF '"personelNumarasi"'   IN lv_json WITH '"PersonelNumarasi"'.
+          REPLACE ALL OCCURRENCES OF '"ad"'                 IN lv_json WITH '"Ad"'.
+          REPLACE ALL OCCURRENCES OF '"soyad"'              IN lv_json WITH '"Soyad"'.
+          REPLACE ALL OCCURRENCES OF '"calismaGunSayisi"'   IN lv_json WITH '"CalismaGunSayisi"'.
+          REPLACE ALL OCCURRENCES OF '"eposta"'             IN lv_json WITH '"Eposta"'.
+
+        ELSE.
+          CLEAR  lv_json.
+          lv_hata     = 'NoContent'.
+          lv_hatamsj  = 'İstenilen veri bulunamamıştır.'.
         ENDIF.
 
       WHEN 'GET_INV_INBOX'.
