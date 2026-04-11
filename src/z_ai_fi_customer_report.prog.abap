@@ -26,7 +26,7 @@ TYPES: BEGIN OF ty_s_output,
          land1      TYPE land1,
          stras      TYPE stras_gp,
          telf1      TYPE telf1,
-         erdat      TYPE erdat,
+         erdat      TYPE knb1-erdat,
          cellcolor  TYPE lvc_t_scol,
        END OF ty_s_output,
        ty_t_output TYPE STANDARD TABLE OF ty_s_output WITH EMPTY KEY.
@@ -138,7 +138,7 @@ CLASS lcl_report IMPLEMENTATION.
            kna1~land1,
            kna1~stras,
            kna1~telf1,
-           kna1~erdat,
+           knb1~erdat,
            knb1~bukrs,
            t001~butxt
       FROM kna1
