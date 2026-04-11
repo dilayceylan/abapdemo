@@ -17,7 +17,6 @@ CLASS zcl_ai_claude DEFINITION
              orgeh      TYPE orgeh,
              orgeh_text TYPE stext,
              stell      TYPE stell,
-             stell_text TYPE orgtx,
            END OF ty_s_employee_response.
 
     " Request structure for employee service
@@ -45,12 +44,6 @@ CLASS zcl_ai_claude DEFINITION
         iv_date        TYPE begda
       RETURNING
         VALUE(rv_text) TYPE stext.
-
-    METHODS get_stell_text
-      IMPORTING
-        iv_stell       TYPE stell
-      RETURNING
-        VALUE(rv_text) TYPE orgtx.
 
     METHODS check_hr_authority
       IMPORTING
@@ -167,10 +160,6 @@ CLASS zcl_ai_claude IMPLEMENTATION.
       iv_orgeh = rs_response-orgeh
       iv_date  = iv_date ).
 
-    " Get position/job text from T527X
-    rs_response-stell_text = get_stell_text(
-      iv_stell = rs_response-stell ).
-
     " Set success response
     rs_response-pernr   = iv_pernr.
     rs_response-code    = gc_code_success.
@@ -189,20 +178,6 @@ CLASS zcl_ai_claude IMPLEMENTATION.
         AND langu = @sy-langu
         AND begda <= @iv_date
         AND endda >= @iv_date.
-
-    IF sy-subrc <> 0.
-      CLEAR rv_text.
-    ENDIF.
-  ENDMETHOD.
-
-
-  METHOD get_stell_text.
-    " Position (Job) text from T527X
-    SELECT SINGLE orgtx
-      FROM t527x
-      INTO @rv_text
-      WHERE stell = @iv_stell
-        AND sprsl = @sy-langu.
 
     IF sy-subrc <> 0.
       CLEAR rv_text.
