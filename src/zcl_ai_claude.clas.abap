@@ -17,7 +17,7 @@ CLASS zcl_ai_claude DEFINITION
              orgeh      TYPE orgeh,
              orgeh_text TYPE stext,
              stell      TYPE stell,
-             stell_text TYPE stltx,
+             stell_text TYPE orgtx,
            END OF ty_s_employee_response.
 
     " Request structure for employee service
@@ -50,7 +50,7 @@ CLASS zcl_ai_claude DEFINITION
       IMPORTING
         iv_stell       TYPE stell
       RETURNING
-        VALUE(rv_text) TYPE stltx.
+        VALUE(rv_text) TYPE orgtx.
 
     METHODS check_hr_authority
       IMPORTING
@@ -198,7 +198,7 @@ CLASS zcl_ai_claude IMPLEMENTATION.
 
   METHOD get_stell_text.
     " Position (Job) text from T527X
-    SELECT SINGLE stltx
+    SELECT SINGLE orgtx
       FROM t527x
       INTO @rv_text
       WHERE stell = @iv_stell
