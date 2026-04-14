@@ -8,12 +8,6 @@
 REPORT z_ai_fi_vendor_report.
 
 *----------------------------------------------------------------------*
-* Constants
-*----------------------------------------------------------------------*
-CONSTANTS: gc_status_success TYPE char1 VALUE 'S',
-           gc_status_error   TYPE char1 VALUE 'E'.
-
-*----------------------------------------------------------------------*
 * Type definitions
 *----------------------------------------------------------------------*
 TYPES: BEGIN OF ty_s_output,
@@ -85,6 +79,14 @@ CLASS lcl_report DEFINITION.
       enrich_email,
       build_fieldcatalog
         RETURNING VALUE(rt_fieldcatalog) TYPE lvc_t_fcat,
+      add_fieldcat
+        IMPORTING
+          iv_fieldname       TYPE lvc_fname
+          iv_coltext         TYPE lvc_txtcol
+          iv_outputlen       TYPE lvc_outlen
+          iv_hotspot         TYPE abap_bool DEFAULT abap_false
+        CHANGING
+          ct_fieldcatalog    TYPE lvc_t_fcat,
       build_layout
         RETURNING VALUE(rs_layout) TYPE lvc_s_layo,
       display_alv.
@@ -163,7 +165,7 @@ CLASS lcl_report IMPLEMENTATION.
         AND lfb1~bukrs IN @s_bukrs
         AND lfa1~ktokk IN @s_ktokk
         AND lfa1~land1 IN @s_land1
-      INTO CORRESPONDING FIELDS OF TABLE @mt_output.
+      INTO TABLE @mt_output.
 
     IF sy-subrc <> 0.
       CLEAR mt_output.
@@ -175,8 +177,6 @@ CLASS lcl_report IMPLEMENTATION.
 
   METHOD enrich_email.
     " Email adresi ADR6 tablosundan — bulk fetch, LOOP içinde SELECT yok
-    DATA lt_adrnr TYPE STANDARD TABLE OF adrnr WITH EMPTY KEY.
-
     " Önce ADRNR'leri topla (LFA1'den)
     SELECT lifnr, adrnr
       FROM lfa1
@@ -211,43 +211,34 @@ CLASS lcl_report IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD build_fieldcatalog.
-    " Macro for cleaner fieldcatalog building
+    add_fieldcat( EXPORTING iv_fieldname = 'LIFNR' iv_coltext = TEXT-c01 iv_outputlen = 10 iv_hotspot = abap_true CHANGING ct_fieldcatalog = rt_fieldcatalog ).
+    add_fieldcat( EXPORTING iv_fieldname = 'NAME1' iv_coltext = TEXT-c02 iv_outputlen = 35 CHANGING ct_fieldcatalog = rt_fieldcatalog ).
+    add_fieldcat( EXPORTING iv_fieldname = 'NAME2' iv_coltext = TEXT-c03 iv_outputlen = 35 CHANGING ct_fieldcatalog = rt_fieldcatalog ).
+    add_fieldcat( EXPORTING iv_fieldname = 'SORTL' iv_coltext = TEXT-c04 iv_outputlen = 10 CHANGING ct_fieldcatalog = rt_fieldcatalog ).
+    add_fieldcat( EXPORTING iv_fieldname = 'ORT01' iv_coltext = TEXT-c05 iv_outputlen = 25 CHANGING ct_fieldcatalog = rt_fieldcatalog ).
+    add_fieldcat( EXPORTING iv_fieldname = 'PSTLZ' iv_coltext = TEXT-c06 iv_outputlen = 10 CHANGING ct_fieldcatalog = rt_fieldcatalog ).
+    add_fieldcat( EXPORTING iv_fieldname = 'LAND1' iv_coltext = TEXT-c07 iv_outputlen = 5  CHANGING ct_fieldcatalog = rt_fieldcatalog ).
+    add_fieldcat( EXPORTING iv_fieldname = 'REGIO' iv_coltext = TEXT-c08 iv_outputlen = 5  CHANGING ct_fieldcatalog = rt_fieldcatalog ).
+    add_fieldcat( EXPORTING iv_fieldname = 'STRAS' iv_coltext = TEXT-c09 iv_outputlen = 30 CHANGING ct_fieldcatalog = rt_fieldcatalog ).
+    add_fieldcat( EXPORTING iv_fieldname = 'TELF1' iv_coltext = TEXT-c10 iv_outputlen = 16 CHANGING ct_fieldcatalog = rt_fieldcatalog ).
+    add_fieldcat( EXPORTING iv_fieldname = 'TELFX' iv_coltext = TEXT-c11 iv_outputlen = 16 CHANGING ct_fieldcatalog = rt_fieldcatalog ).
+    add_fieldcat( EXPORTING iv_fieldname = 'EMAIL' iv_coltext = TEXT-c12 iv_outputlen = 40 CHANGING ct_fieldcatalog = rt_fieldcatalog ).
+    add_fieldcat( EXPORTING iv_fieldname = 'KTOKK' iv_coltext = TEXT-c13 iv_outputlen = 6  CHANGING ct_fieldcatalog = rt_fieldcatalog ).
+    add_fieldcat( EXPORTING iv_fieldname = 'BUKRS' iv_coltext = TEXT-c14 iv_outputlen = 6  CHANGING ct_fieldcatalog = rt_fieldcatalog ).
+    add_fieldcat( EXPORTING iv_fieldname = 'BUTXT' iv_coltext = TEXT-c15 iv_outputlen = 25 CHANGING ct_fieldcatalog = rt_fieldcatalog ).
+    add_fieldcat( EXPORTING iv_fieldname = 'AKONT' iv_coltext = TEXT-c16 iv_outputlen = 10 CHANGING ct_fieldcatalog = rt_fieldcatalog ).
+    add_fieldcat( EXPORTING iv_fieldname = 'ZTERM' iv_coltext = TEXT-c17 iv_outputlen = 6  CHANGING ct_fieldcatalog = rt_fieldcatalog ).
+    add_fieldcat( EXPORTING iv_fieldname = 'ERDAT' iv_coltext = TEXT-c18 iv_outputlen = 10 CHANGING ct_fieldcatalog = rt_fieldcatalog ).
+    add_fieldcat( EXPORTING iv_fieldname = 'ERNAM' iv_coltext = TEXT-c19 iv_outputlen = 12 CHANGING ct_fieldcatalog = rt_fieldcatalog ).
+  ENDMETHOD.
+
+  METHOD add_fieldcat.
     DATA ls_fc TYPE lvc_s_fcat.
-
-    DEFINE add_field.
-      CLEAR ls_fc.
-      ls_fc-fieldname = &1.
-      ls_fc-coltext   = &2.
-      ls_fc-outputlen = &3.
-      APPEND ls_fc TO rt_fieldcatalog.
-    END-OF-DEFINITION.
-
-    add_field: 'LIFNR' TEXT-c01 10,
-               'NAME1' TEXT-c02 35,
-               'NAME2' TEXT-c03 35,
-               'SORTL' TEXT-c04 10,
-               'ORT01' TEXT-c05 25,
-               'PSTLZ' TEXT-c06 10,
-               'LAND1' TEXT-c07 5,
-               'REGIO' TEXT-c08 5,
-               'STRAS' TEXT-c09 30,
-               'TELF1' TEXT-c10 16,
-               'TELFX' TEXT-c11 16,
-               'EMAIL' TEXT-c12 40,
-               'KTOKK' TEXT-c13 6,
-               'BUKRS' TEXT-c14 6,
-               'BUTXT' TEXT-c15 25,
-               'AKONT' TEXT-c16 10,
-               'ZTERM' TEXT-c17 6,
-               'ERDAT' TEXT-c18 10,
-               'ERNAM' TEXT-c19 12.
-
-    " Vendor number as hotspot
-    READ TABLE rt_fieldcatalog ASSIGNING FIELD-SYMBOL(<ls_lifnr>)
-      WITH KEY fieldname = 'LIFNR'.
-    IF sy-subrc = 0.
-      <ls_lifnr>-hotspot = abap_true.
-    ENDIF.
+    ls_fc-fieldname = iv_fieldname.
+    ls_fc-coltext   = iv_coltext.
+    ls_fc-outputlen = iv_outputlen.
+    ls_fc-hotspot   = iv_hotspot.
+    APPEND ls_fc TO ct_fieldcatalog.
   ENDMETHOD.
 
   METHOD build_layout.
