@@ -159,11 +159,11 @@ CLASS lcl_report IMPLEMENTATION.
       FROM lfa1
       INNER JOIN lfb1 ON lfb1~lifnr = lfa1~lifnr
       INNER JOIN t001 ON t001~bukrs = lfb1~bukrs
-      INTO CORRESPONDING FIELDS OF TABLE @mt_output
       WHERE lfa1~lifnr IN @s_lifnr
         AND lfb1~bukrs IN @s_bukrs
         AND lfa1~ktokk IN @s_ktokk
-        AND lfa1~land1 IN @s_land1.
+        AND lfa1~land1 IN @s_land1
+      INTO CORRESPONDING FIELDS OF TABLE @mt_output.
 
     IF sy-subrc <> 0.
       CLEAR mt_output.
@@ -181,8 +181,8 @@ CLASS lcl_report IMPLEMENTATION.
     SELECT lifnr, adrnr
       FROM lfa1
       FOR ALL ENTRIES IN @mt_output
-      INTO TABLE @DATA(lt_lfa1_adr)
-      WHERE lifnr = @mt_output-lifnr.
+      WHERE lifnr = @mt_output-lifnr
+      INTO TABLE @DATA(lt_lfa1_adr).
 
     IF lt_lfa1_adr IS INITIAL.
       RETURN.
@@ -192,9 +192,9 @@ CLASS lcl_report IMPLEMENTATION.
     SELECT addrnumber, smtp_addr
       FROM adr6
       FOR ALL ENTRIES IN @lt_lfa1_adr
-      INTO TABLE @DATA(lt_adr6)
       WHERE addrnumber = @lt_lfa1_adr-adrnr
-        AND flgdefault = 'X'.
+        AND flgdefault = 'X'
+      INTO TABLE @DATA(lt_adr6).
 
     " Email'leri output'a eşleştir
     LOOP AT mt_output ASSIGNING FIELD-SYMBOL(<ls_output>).
