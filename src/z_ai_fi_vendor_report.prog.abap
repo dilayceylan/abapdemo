@@ -165,7 +165,7 @@ CLASS lcl_report IMPLEMENTATION.
         AND lfb1~bukrs IN @s_bukrs
         AND lfa1~ktokk IN @s_ktokk
         AND lfa1~land1 IN @s_land1
-      INTO TABLE @mt_output.
+      INTO CORRESPONDING FIELDS OF TABLE @mt_output.
 
     IF sy-subrc <> 0.
       CLEAR mt_output.
