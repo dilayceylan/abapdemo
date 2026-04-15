@@ -10,7 +10,7 @@
 CONSTANTS: gc_status_success TYPE char1    VALUE 'S',
            gc_status_error   TYPE char1    VALUE 'E',
            gc_doc_type       TYPE blart    VALUE 'KR',     " Satici faturasi
-           gc_bus_act        TYPE bus_act   VALUE 'RFBU',   " FI belge islemi
+           gc_bus_act        TYPE bapiache09-bus_act VALUE 'RFBU',   " FI belge islemi
            gc_obj_type       TYPE bapiache09-obj_type VALUE 'BKPFF',
            gc_debit_credit_s TYPE shkzg    VALUE 'S',      " Soll / Borc
            gc_debit_credit_h TYPE shkzg    VALUE 'H',      " Haben / Alacak
