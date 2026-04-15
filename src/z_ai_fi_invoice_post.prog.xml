@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<abapGit version="v1.0.0" serializer="LCL_OBJECT_PROG" serializer_version="v1.0.0">
+ <asx:abap xmlns:asx="http://www.sap.com/abapxml" version="1.0">
+  <asx:values>
+   <PROGDIR>
+    <NAME>Z_AI_FI_INVOICE_POST</NAME>
+    <STATE>A</STATE>
+    <RSTAT>K</RSTAT>
+    <TYPE>1</TYPE>
+    <UCCHECK>X</UCCHECK>
+    <FIXPT>X</FIXPT>
+    <SUBC>1</SUBC>
+   </PROGDIR>
+   <TPOOL>
+    <item>
+     <ID>R</ID>
+     <ENTRY>Excel Toplu Fatura Kaydi</ENTRY>
+     <LENGTH>30</LENGTH>
+    </item>
+   </TPOOL>
+  </asx:values>
+ </asx:abap>
+</abapGit>
