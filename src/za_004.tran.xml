@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<abapGit version="v1.0.0" serializer="LCL_OBJECT_TRAN" serializer_version="v1.0.0">
+ <asx:abap xmlns:asx="http://www.sap.com/abapxml" version="1.0">
+  <asx:values>
+   <TSTC>
+    <TCODE>ZA_004</TCODE>
+    <PGMNA>Z_AI_FI_INVOICE_POST</PGMNA>
+    <DESSION_TCODE>X</DESSION_TCODE>
+   </TSTC>
+   <TSTCC>
+    <TCODE>ZA_004</TCODE>
+    <S_WEBGUI>2</S_WEBGUI>
+    <S_PERFIMP>2</S_PERFIMP>
+    <S_UPDTASK>0</S_UPDTASK>
+   </TSTCC>
+   <TSTCT>
+    <SPRSL>E</SPRSL>
+    <TCODE>ZA_004</TCODE>
+    <TTEXT>Bulk Vendor Invoice Posting</TTEXT>
+   </TSTCT>
+  </asx:values>
+ </asx:abap>
+</abapGit>
