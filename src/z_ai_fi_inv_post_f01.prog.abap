@@ -13,6 +13,7 @@ CLASS lcl_invoice_post DEFINITION.
   PUBLIC SECTION.
     CLASS-METHODS:
       run,
+      download_template,
       check_authority
         RETURNING VALUE(rv_ok) TYPE abap_bool,
       read_excel
@@ -53,6 +54,84 @@ ENDCLASS.
 * Ana islem sinifi — implementasyon
 *----------------------------------------------------------------------*
 CLASS lcl_invoice_post IMPLEMENTATION.
+
+  METHOD download_template.
+    " Tab-delimited sablon olustur ve indir
+    CONSTANTS lc_tab TYPE c LENGTH 1 VALUE cl_abap_char_utilities=>horizontal_tab.
+    CONSTANTS lc_crlf TYPE string VALUE cl_abap_char_utilities=>cr_lf.
+
+    DATA lt_data TYPE STANDARD TABLE OF string.
+
+    " Baslik satiri
+    APPEND |Belge Tarihi{ lc_tab }Satici No{ lc_tab }Tutar{ lc_tab }|
+         & |Para Birimi{ lc_tab }Vergi Kodu{ lc_tab }Gider Hesabi{ lc_tab }|
+         & |Aciklama{ lc_tab }Referans No|
+      TO lt_data.
+
+    " Ornek veri satirlari
+    APPEND |20260415{ lc_tab }1000{ lc_tab }1500.00{ lc_tab }|
+         & |TRY{ lc_tab }V1{ lc_tab }6300100000{ lc_tab }|
+         & |Ofis malzemesi alimi{ lc_tab }INV-2026-001|
+      TO lt_data.
+
+    APPEND |20260415{ lc_tab }1001{ lc_tab }3200.50{ lc_tab }|
+         & |TRY{ lc_tab }V1{ lc_tab }6300200000{ lc_tab }|
+         & |IT hizmet bedeli{ lc_tab }INV-2026-002|
+      TO lt_data.
+
+    APPEND |20260415{ lc_tab }1002{ lc_tab }850.00{ lc_tab }|
+         & |EUR{ lc_tab }V0{ lc_tab }6300300000{ lc_tab }|
+         & |Danismanlik ucreti{ lc_tab }INV-2026-003|
+      TO lt_data.
+
+    APPEND |20260410{ lc_tab }1000{ lc_tab }4750.00{ lc_tab }|
+         & |TRY{ lc_tab }V1{ lc_tab }6300100000{ lc_tab }|
+         & |Kirtasiye malzemesi{ lc_tab }INV-2026-004|
+      TO lt_data.
+
+    APPEND |20260412{ lc_tab }1003{ lc_tab }12000.00{ lc_tab }|
+         & |USD{ lc_tab }V0{ lc_tab }6300400000{ lc_tab }|
+         & |Yazilim lisans bedeli{ lc_tab }INV-2026-005|
+      TO lt_data.
+
+    " Kayit yeri sec
+    DATA lv_filename  TYPE string.
+    DATA lv_path      TYPE string.
+    DATA lv_fullpath  TYPE string.
+
+    cl_gui_frontend_services=>file_save_dialog(
+      EXPORTING
+        window_title      = CONV string( TEXT-d01 )
+        default_extension = 'XLS'
+        default_file_name = 'FATURA_SABLON.XLS'
+        file_filter       = CONV string( TEXT-d02 )
+      CHANGING
+        filename          = lv_filename
+        path              = lv_path
+        fullpath          = lv_fullpath
+      EXCEPTIONS
+        OTHERS            = 1 ).
+
+    IF sy-subrc <> 0 OR lv_fullpath IS INITIAL.
+      RETURN.
+    ENDIF.
+
+    " Dosyayi indir
+    cl_gui_frontend_services=>gui_download(
+      EXPORTING
+        filename              = lv_fullpath
+        filetype              = 'ASC'
+        write_field_separator = abap_true
+      CHANGING
+        data_tab              = lt_data
+      EXCEPTIONS
+        OTHERS                = 1 ).
+
+    IF sy-subrc = 0.
+      MESSAGE TEXT-d03 TYPE 'S'.  " Sablon basariyla indirildi
+    ENDIF.
+  ENDMETHOD.
+
 
   METHOD run.
     " 1) Yetki kontrolu

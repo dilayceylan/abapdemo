@@ -13,8 +13,9 @@ INCLUDE z_ai_fi_inv_post_sel.   " Selection screen
 INCLUDE z_ai_fi_inv_post_f01.   " Local class ve is mantigi
 
 INITIALIZATION.
-  p_bldat = sy-datum.
-  p_budat = sy-datum.
+  p_bldat  = sy-datum.
+  p_budat  = sy-datum.
+  pb_tmpl  = TEXT-b05.  " Ornek Excel Sablonu Indir
 
 START-OF-SELECTION.
   lcl_invoice_post=>run( ).
