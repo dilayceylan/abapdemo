@@ -790,7 +790,14 @@ CLASS zcl_ai_claude IMPLEMENTATION.
 
 
   METHOD get_vendor_balance.
-    " Validate vendor exists in LFA1 + LFB1
+    " ---------------------------------------------------------------
+    " Satıcı bakiye hesaplama — BSIK (açık) + BSAK (kapalı)
+    " Input:  iv_lifnr, iv_bukrs, iv_gjahr
+    " Output: rs_balance (borç toplam, alacak toplam, net bakiye, PB)
+    " Raises: cx_no_entry_in_table if vendor not found
+    " ---------------------------------------------------------------
+
+    " 1) Satıcı master kontrolü (LFA1)
     SELECT SINGLE lifnr
       FROM lfa1
       INTO @DATA(lv_check)
@@ -801,6 +808,7 @@ CLASS zcl_ai_claude IMPLEMENTATION.
         EXPORTING table_name = 'LFA1'.
     ENDIF.
 
+    " 2) Şirket kodu ataması kontrolü (LFB1)
     SELECT SINGLE lifnr
       FROM lfb1
       INTO @lv_check
@@ -812,12 +820,12 @@ CLASS zcl_ai_claude IMPLEMENTATION.
         EXPORTING table_name = 'LFB1'.
     ENDIF.
 
-    " Set header fields
+    " 3) Header alanları
     rs_balance-lifnr = iv_lifnr.
     rs_balance-bukrs = iv_bukrs.
     rs_balance-gjahr = iv_gjahr.
 
-    " Get company code currency from T001
+    " 4) Şirket kodu para birimi (T001)
     SELECT SINGLE waers
       FROM t001
       INTO @rs_balance-waers
@@ -827,7 +835,7 @@ CLASS zcl_ai_claude IMPLEMENTATION.
       RETURN.
     ENDIF.
 
-    " Fetch open items (BSIK) — only required fields
+    " 5) Açık kalemler (BSIK) — sadece gerekli alanlar
     DATA lt_items TYPE ty_t_vendor_items.
 
     SELECT bukrs, lifnr, gjahr, waers, dmbtr, shkzg
@@ -837,7 +845,7 @@ CLASS zcl_ai_claude IMPLEMENTATION.
         AND lifnr = @iv_lifnr
         AND gjahr = @iv_gjahr.
 
-    " Fetch cleared items (BSAK) and append
+    " 6) Kapalı kalemler (BSAK) — append
     SELECT bukrs, lifnr, gjahr, waers, dmbtr, shkzg
       FROM bsak
       APPENDING TABLE @lt_items
@@ -845,7 +853,7 @@ CLASS zcl_ai_claude IMPLEMENTATION.
         AND lifnr = @iv_lifnr
         AND gjahr = @iv_gjahr.
 
-    " Currency converting factor for correct decimal handling
+    " 7) Para birimi dönüşüm faktörü
     DATA lv_factor TYPE i VALUE 1.
     CALL FUNCTION 'CURRENCY_CONVERTING_FACTOR'
       EXPORTING
@@ -855,10 +863,11 @@ CLASS zcl_ai_claude IMPLEMENTATION.
       EXCEPTIONS
         OTHERS   = 1.
 
-    " Aggregate debit / credit
+    " 8) Borç / Alacak toplama
     LOOP AT lt_items ASSIGNING FIELD-SYMBOL(<ls_item>).
       DATA(lv_amount) = <ls_item>-dmbtr * lv_factor.
 
+      " S = Borç (Soll/Debit), H = Alacak (Haben/Credit)
       IF <ls_item>-shkzg = 'S'.
         rs_balance-debit_total = rs_balance-debit_total + lv_amount.
       ELSE.
