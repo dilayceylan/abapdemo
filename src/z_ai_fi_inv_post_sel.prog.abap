@@ -29,11 +29,6 @@ SELECTION-SCREEN BEGIN OF BLOCK b04 WITH FRAME TITLE TEXT-b04.
   SELECTION-SCREEN PUSHBUTTON /1(40) pb_tmpl USER-COMMAND tmpl.
 SELECTION-SCREEN END OF BLOCK b04.
 
-AT SELECTION-SCREEN.
-  IF sy-ucomm = 'TMPL'.
-    lcl_invoice_post=>download_template( ).
-  ENDIF.
-
 " Dosya secim dialogu
 AT SELECTION-SCREEN ON VALUE-REQUEST FOR p_file.
   DATA lt_file_table TYPE filetable.

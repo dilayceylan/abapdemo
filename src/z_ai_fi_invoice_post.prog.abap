@@ -17,5 +17,10 @@ INITIALIZATION.
   p_budat  = sy-datum.
   pb_tmpl  = TEXT-b05.  " Ornek Excel Sablonu Indir
 
+AT SELECTION-SCREEN.
+  IF sy-ucomm = 'TMPL'.
+    lcl_invoice_post=>download_template( ).
+  ENDIF.
+
 START-OF-SELECTION.
   lcl_invoice_post=>run( ).
