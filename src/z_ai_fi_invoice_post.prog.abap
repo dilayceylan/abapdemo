@@ -18,9 +18,14 @@ INITIALIZATION.
   pb_tmpl  = TEXT-b05.  " Ornek Excel Sablonu Indir
 
 AT SELECTION-SCREEN.
-  IF sy-ucomm = 'TMPL'.
-    lcl_invoice_post=>download_template( ).
-  ENDIF.
+  CASE sy-ucomm.
+    WHEN 'TMPL'.
+      lcl_invoice_post=>download_template( ).
+    WHEN 'ONLI'.  " Calistir (F8)
+      IF p_file IS INITIAL.
+        MESSAGE TEXT-m06 TYPE 'E'.  " Dosya secimi zorunludur
+      ENDIF.
+  ENDCASE.
 
 START-OF-SELECTION.
   lcl_invoice_post=>run( ).

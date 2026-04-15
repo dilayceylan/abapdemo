@@ -8,7 +8,7 @@
 
 " Dosya secimi
 SELECTION-SCREEN BEGIN OF BLOCK b01 WITH FRAME TITLE TEXT-b01.
-  PARAMETERS: p_file TYPE rlgrap-filename OBLIGATORY.
+  PARAMETERS: p_file TYPE rlgrap-filename.
 SELECTION-SCREEN END OF BLOCK b01.
 
 " Kayit parametreleri
