@@ -113,6 +113,32 @@ ATC'ye takılmamak için şu kurallara kesinlikle uy:
 - String birleştirmede `CONCATENATE` yerine `|...|` string template kullan.
 - `CONDENSE NO-GAPS` yerine `condense( val = lv_str del = ' ' )` kullan.
 
+### 3.5 Tip Uyumluluk Kuralları (Type Compatibility)
+
+Method veya fonksiyon çağrırken parametre tipleri **birebir** uymalı. Farklı tiplerde değer geçme:
+
+- **TEXT symbol'ler `CHAR` tipindedir**, `STRING` beklenen parametreye doğrudan geçilemez. `CONV string( TEXT-xxx )` ile dönüştür.
+- **Method parametresine değer geçerken** önce uygun tipte bir değişkene ata, sonra geç:
+  ```abap
+  " YANLIŞ — TEXT-f01 CHAR tipinde, WINDOW_TITLE STRING bekliyor
+  cl_gui_frontend_services=>file_open_dialog(
+    EXPORTING window_title = TEXT-f01 ).    " Tip hatası!
+
+  " DOĞRU — önce STRING'e dönüştür
+  DATA(lv_title) = CONV string( TEXT-f01 ).
+  cl_gui_frontend_services=>file_open_dialog(
+    EXPORTING window_title = lv_title ).
+  ```
+- **BAPI yapı alanlarına referans ver**: Standalone data element bulunamazsa yapıdan referans al:
+  ```abap
+  " YANLIŞ — BUS_ACT data element'i yoksa hata verir
+  CONSTANTS gc_bus_act TYPE bus_act VALUE 'RFBU'.
+
+  " DOĞRU — BAPI yapısından referans
+  CONSTANTS gc_bus_act TYPE bapiache09-bus_act VALUE 'RFBU'.
+  ```
+- **Fonksiyon modülü çağırmadan önce** SE37'den parametre tiplerini kontrol et ve kodda aynı tipleri kullan.
+
 ### 3.4 Obsolete Statement'lardan Kaçın
 
 ATC bu kullanımları yakalar ve hata verir:

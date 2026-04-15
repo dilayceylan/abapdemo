@@ -28,12 +28,14 @@ SELECTION-SCREEN END OF BLOCK b03.
 AT SELECTION-SCREEN ON VALUE-REQUEST FOR p_file.
   DATA lt_file_table TYPE filetable.
   DATA lv_rc         TYPE i.
+  DATA(lv_title)  = CONV string( TEXT-f01 ).
+  DATA(lv_filter) = CONV string( |Excel (*.xlsx)\|*.xlsx\|{ TEXT-f02 } (*.*)\|*.*| ).
 
   cl_gui_frontend_services=>file_open_dialog(
     EXPORTING
-      window_title      = TEXT-f01
+      window_title      = lv_title
       default_extension = 'XLSX'
-      file_filter       = |Excel (*.xlsx)\|*.xlsx\|{ TEXT-f02 } (*.*)\|*.*|
+      file_filter       = lv_filter
     CHANGING
       file_table        = lt_file_table
       rc                = lv_rc
