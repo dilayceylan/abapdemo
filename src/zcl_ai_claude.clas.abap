@@ -6,7 +6,6 @@ CLASS zcl_ai_claude DEFINITION
   PUBLIC SECTION.
 
     INTERFACES if_http_extension .
-    INTERFACES zif_fi_vendor_api .
 
     " Response structure for employee service
     TYPES: BEGIN OF ty_s_employee_response,
@@ -99,7 +98,39 @@ CLASS zcl_ai_claude DEFINITION
       RETURNING
         VALUE(rs_response) TYPE ty_s_onboarding_response.
 
-    ALIASES get_vendor_balance FOR zif_fi_vendor_api~get_vendor_balance.
+    " Vendor balance structures
+    TYPES: BEGIN OF ty_s_vendor_balance,
+             lifnr        TYPE lifnr,
+             bukrs        TYPE bukrs,
+             gjahr        TYPE gjahr,
+             waers        TYPE waers,
+             debit_total  TYPE wrbtr,
+             credit_total TYPE wrbtr,
+             net_balance  TYPE wrbtr,
+           END OF ty_s_vendor_balance.
+
+    TYPES: BEGIN OF ty_s_vendor_request,
+             action TYPE string,
+             lifnr  TYPE lifnr,
+             bukrs  TYPE bukrs,
+             gjahr  TYPE gjahr,
+           END OF ty_s_vendor_request.
+
+    TYPES: BEGIN OF ty_s_vendor_response,
+             code    TYPE char1,
+             message TYPE string,
+             balance TYPE ty_s_vendor_balance,
+           END OF ty_s_vendor_response.
+
+    METHODS get_vendor_balance
+      IMPORTING
+        iv_lifnr          TYPE lifnr
+        iv_bukrs          TYPE bukrs
+        iv_gjahr          TYPE gjahr
+      RETURNING
+        VALUE(rs_balance) TYPE ty_s_vendor_balance
+      RAISING
+        cx_no_entry_in_table.
 
   PROTECTED SECTION.
   PRIVATE SECTION.
@@ -114,44 +145,6 @@ CLASS zcl_ai_claude DEFINITION
              shkzg TYPE shkzg,
            END OF ty_s_vendor_item,
            ty_t_vendor_items TYPE STANDARD TABLE OF ty_s_vendor_item WITH EMPTY KEY.
-
-    METHODS handle_vendor_balance
-      IMPORTING
-        iv_cdata        TYPE string
-      RETURNING
-        VALUE(rv_json)  TYPE string.
-
-    METHODS handle_hr_request
-      IMPORTING
-        iv_cdata        TYPE string
-        iv_action       TYPE string
-        is_request      TYPE ty_s_employee_request
-      RETURNING
-        VALUE(rv_json)  TYPE string.
-
-    METHODS check_vendor_exists
-      IMPORTING
-        iv_lifnr         TYPE lifnr
-        iv_bukrs         TYPE bukrs
-      RETURNING
-        VALUE(rv_exists) TYPE abap_bool.
-
-    METHODS fetch_vendor_items
-      IMPORTING
-        iv_lifnr         TYPE lifnr
-        iv_bukrs         TYPE bukrs
-        iv_gjahr         TYPE gjahr
-      RETURNING
-        VALUE(rt_items)  TYPE ty_t_vendor_items.
-
-    METHODS aggregate_balance
-      IMPORTING
-        it_items          TYPE ty_t_vendor_items
-        iv_lifnr          TYPE lifnr
-        iv_bukrs          TYPE bukrs
-        iv_gjahr          TYPE gjahr
-      RETURNING
-        VALUE(rs_balance) TYPE zif_fi_vendor_api=>ty_s_vendor_balance.
 
     METHODS get_orgeh_text
       IMPORTING
@@ -215,27 +208,134 @@ CLASS zcl_ai_claude IMPLEMENTATION.
     DATA(lv_cdata) = server->request->get_cdata( ).
     DATA lv_json TYPE string.
 
-    " Determine action from request
-    DATA ls_generic TYPE ty_s_employee_request.
+    " Try vendor request first (has lifnr field)
+    DATA ls_vreq TYPE ty_s_vendor_request.
     /ui2/cl_json=>deserialize(
       EXPORTING json = lv_cdata
-      CHANGING  data = ls_generic ).
+      CHANGING  data = ls_vreq ).
 
-    DATA(lv_action) = to_upper( ls_generic-action ).
+    DATA(lv_action) = to_upper( ls_vreq-action ).
 
     TRY.
-        " Route: vendor balance has its own request structure
-        IF lv_action = gc_action_vendor_bal.
-          lv_json = handle_vendor_balance( lv_cdata ).
-        ELSE.
-          lv_json = handle_hr_request( iv_cdata  = lv_cdata
-                                       iv_action = lv_action
-                                       is_request = ls_generic ).
-        ENDIF.
+        CASE lv_action.
+
+          WHEN gc_action_vendor_bal.
+            " --- Vendor balance service ---
+            IF ls_vreq-lifnr IS INITIAL OR ls_vreq-bukrs IS INITIAL OR ls_vreq-gjahr IS INITIAL.
+              lv_json = /ui2/cl_json=>serialize(
+                data = VALUE ty_s_vendor_response(
+                  code    = gc_code_error
+                  message = 'LIFNR, BUKRS, and GJAHR are required' ) ).
+            ELSE.
+              " Authorization check — F_BKPF_BUK
+              AUTHORITY-CHECK OBJECT 'F_BKPF_BUK'
+                ID 'BUKRS' FIELD ls_vreq-bukrs
+                ID 'ACTVT' FIELD '03'.
+
+              IF sy-subrc <> 0.
+                lv_json = /ui2/cl_json=>serialize(
+                  data = VALUE ty_s_vendor_response(
+                    code    = gc_code_error
+                    message = |No authorization for company code { ls_vreq-bukrs }| ) ).
+              ELSE.
+                TRY.
+                    DATA(ls_balance) = get_vendor_balance(
+                      iv_lifnr = ls_vreq-lifnr
+                      iv_bukrs = ls_vreq-bukrs
+                      iv_gjahr = ls_vreq-gjahr ).
+
+                    lv_json = /ui2/cl_json=>serialize(
+                      data = VALUE ty_s_vendor_response(
+                        code    = gc_code_success
+                        message = |Vendor balance retrieved successfully|
+                        balance = ls_balance )
+                      compress    = abap_true
+                      pretty_name = /ui2/cl_json=>pretty_mode-camel_case ).
+
+                  CATCH cx_no_entry_in_table INTO DATA(lx_vendor).
+                    lv_json = /ui2/cl_json=>serialize(
+                      data = VALUE ty_s_vendor_response(
+                        code    = gc_code_error
+                        message = lx_vendor->get_text( ) ) ).
+                ENDTRY.
+              ENDIF.
+            ENDIF.
+
+          WHEN OTHERS.
+            " --- HR services ---
+            DATA ls_request TYPE ty_s_employee_request.
+            /ui2/cl_json=>deserialize(
+              EXPORTING json = lv_cdata
+              CHANGING  data = ls_request ).
+
+            IF ls_request-date IS INITIAL.
+              lv_json = /ui2/cl_json=>serialize(
+                data = VALUE ty_s_employee_response(
+                  code    = gc_code_error
+                  message = 'DATE is required' ) ).
+            ELSE.
+              CASE lv_action.
+
+                WHEN gc_action_onboarding.
+                  IF ls_request-day IS INITIAL.
+                    lv_json = /ui2/cl_json=>serialize(
+                      data = VALUE ty_s_onboarding_response(
+                        code    = gc_code_error
+                        message = 'DAY parameter is required' ) ).
+                  ELSE.
+                    DATA(ls_onboard_resp) = get_onboarding_data(
+                      iv_date = ls_request-date
+                      iv_day  = ls_request-day ).
+                    lv_json = /ui2/cl_json=>serialize(
+                      data        = ls_onboard_resp
+                      compress    = abap_true
+                      pretty_name = /ui2/cl_json=>pretty_mode-camel_case ).
+                  ENDIF.
+
+                WHEN gc_action_active.
+                  IF ls_request-pernr IS INITIAL.
+                    lv_json = /ui2/cl_json=>serialize(
+                      data = VALUE ty_s_active_emp_response(
+                        code = gc_code_error  message = 'PERNR is required' ) ).
+                  ELSE.
+                    DATA(ls_active_resp) = get_active_employee_data(
+                      iv_pernr = ls_request-pernr
+                      iv_date  = ls_request-date ).
+                    lv_json = /ui2/cl_json=>serialize(
+                      data        = ls_active_resp
+                      compress    = abap_true
+                      pretty_name = /ui2/cl_json=>pretty_mode-camel_case ).
+                  ENDIF.
+
+                WHEN gc_action_employee OR space.
+                  IF ls_request-pernr IS INITIAL.
+                    lv_json = /ui2/cl_json=>serialize(
+                      data = VALUE ty_s_employee_response(
+                        code = gc_code_error  message = 'PERNR is required' ) ).
+                  ELSE.
+                    DATA(ls_emp_resp) = get_employee_data(
+                      iv_pernr = ls_request-pernr
+                      iv_date  = ls_request-date ).
+                    lv_json = /ui2/cl_json=>serialize(
+                      data        = ls_emp_resp
+                      compress    = abap_true
+                      pretty_name = /ui2/cl_json=>pretty_mode-camel_case ).
+                  ENDIF.
+
+                WHEN OTHERS.
+                  lv_json = /ui2/cl_json=>serialize(
+                    data = VALUE ty_s_employee_response(
+                      code    = gc_code_error
+                      message = |Unknown action: { lv_action }| ) ).
+
+              ENDCASE.
+            ENDIF.
+
+        ENDCASE.
 
       CATCH cx_root INTO DATA(lx_root).
         lv_json = /ui2/cl_json=>serialize(
-          data = VALUE zif_fi_vendor_api=>ty_s_vendor_response(
+          data = VALUE ty_s_vendor_response(
             code    = gc_code_error
             message = lx_root->get_text( ) ) ).
     ENDTRY.
@@ -251,126 +351,6 @@ CLASS zcl_ai_claude IMPLEMENTATION.
     ELSE.
       server->response->set_status( code = 400 reason = 'Bad Request' ).
     ENDIF.
-  ENDMETHOD.
-
-
-  METHOD handle_vendor_balance.
-    " Deserialize vendor-specific request
-    DATA ls_vreq TYPE zif_fi_vendor_api=>ty_s_vendor_request.
-    /ui2/cl_json=>deserialize(
-      EXPORTING json = iv_cdata
-      CHANGING  data = ls_vreq ).
-
-    " Validate required fields
-    IF ls_vreq-lifnr IS INITIAL OR ls_vreq-bukrs IS INITIAL OR ls_vreq-gjahr IS INITIAL.
-      rv_json = /ui2/cl_json=>serialize(
-        data = VALUE zif_fi_vendor_api=>ty_s_vendor_response(
-          code    = gc_code_error
-          message = 'LIFNR, BUKRS, and GJAHR are required' ) ).
-      RETURN.
-    ENDIF.
-
-    " Authorization check — F_BKPF_BUK for company code
-    AUTHORITY-CHECK OBJECT 'F_BKPF_BUK'
-      ID 'BUKRS' FIELD ls_vreq-bukrs
-      ID 'ACTVT' FIELD '03'.
-
-    IF sy-subrc <> 0.
-      rv_json = /ui2/cl_json=>serialize(
-        data = VALUE zif_fi_vendor_api=>ty_s_vendor_response(
-          code    = gc_code_error
-          message = |No authorization for company code { ls_vreq-bukrs }| ) ).
-      RETURN.
-    ENDIF.
-
-    TRY.
-        DATA(ls_balance) = get_vendor_balance(
-          iv_lifnr = ls_vreq-lifnr
-          iv_bukrs = ls_vreq-bukrs
-          iv_gjahr = ls_vreq-gjahr ).
-
-        rv_json = /ui2/cl_json=>serialize(
-          data = VALUE zif_fi_vendor_api=>ty_s_vendor_response(
-            code    = gc_code_success
-            message = |Vendor balance retrieved successfully|
-            balance = ls_balance )
-          compress    = abap_true
-          pretty_name = /ui2/cl_json=>pretty_mode-camel_case ).
-
-      CATCH zcx_fi_vendor_not_found INTO DATA(lx_vendor).
-        rv_json = /ui2/cl_json=>serialize(
-          data = VALUE zif_fi_vendor_api=>ty_s_vendor_response(
-            code    = gc_code_error
-            message = lx_vendor->get_text( ) ) ).
-    ENDTRY.
-  ENDMETHOD.
-
-
-  METHOD handle_hr_request.
-    " Validate date — required for all HR services
-    IF is_request-date IS INITIAL.
-      rv_json = /ui2/cl_json=>serialize(
-        data = VALUE ty_s_employee_response(
-          code    = gc_code_error
-          message = 'DATE is required' ) ).
-      RETURN.
-    ENDIF.
-
-    CASE iv_action.
-
-      WHEN gc_action_onboarding.
-        IF is_request-day IS INITIAL.
-          rv_json = /ui2/cl_json=>serialize(
-            data = VALUE ty_s_onboarding_response(
-              code    = gc_code_error
-              message = 'DAY parameter is required' ) ).
-        ELSE.
-          DATA(ls_onboard_resp) = get_onboarding_data(
-            iv_date = is_request-date
-            iv_day  = is_request-day ).
-          rv_json = /ui2/cl_json=>serialize(
-            data        = ls_onboard_resp
-            compress    = abap_true
-            pretty_name = /ui2/cl_json=>pretty_mode-camel_case ).
-        ENDIF.
-
-      WHEN gc_action_active.
-        IF is_request-pernr IS INITIAL.
-          rv_json = /ui2/cl_json=>serialize(
-            data = VALUE ty_s_active_emp_response(
-              code = gc_code_error  message = 'PERNR is required' ) ).
-        ELSE.
-          DATA(ls_active_resp) = get_active_employee_data(
-            iv_pernr = is_request-pernr
-            iv_date  = is_request-date ).
-          rv_json = /ui2/cl_json=>serialize(
-            data        = ls_active_resp
-            compress    = abap_true
-            pretty_name = /ui2/cl_json=>pretty_mode-camel_case ).
-        ENDIF.
-
-      WHEN gc_action_employee OR space.
-        IF is_request-pernr IS INITIAL.
-          rv_json = /ui2/cl_json=>serialize(
-            data = VALUE ty_s_employee_response(
-              code = gc_code_error  message = 'PERNR is required' ) ).
-        ELSE.
-          DATA(ls_emp_resp) = get_employee_data(
-            iv_pernr = is_request-pernr
-            iv_date  = is_request-date ).
-          rv_json = /ui2/cl_json=>serialize(
-            data        = ls_emp_resp
-            compress    = abap_true
-            pretty_name = /ui2/cl_json=>pretty_mode-camel_case ).
-        ENDIF.
-
-      WHEN OTHERS.
-        rv_json = /ui2/cl_json=>serialize(
-          data = VALUE ty_s_employee_response(
-            code    = gc_code_error
-            message = |Unknown action: { iv_action }| ) ).
-
-    ENDCASE.
   ENDMETHOD.
 
 
@@ -809,79 +789,35 @@ CLASS zcl_ai_claude IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD zif_fi_vendor_api~get_vendor_balance.
-    " Validate vendor exists in LFA1 master
-    IF check_vendor_exists( iv_lifnr = iv_lifnr
-                            iv_bukrs = iv_bukrs ) = abap_false.
-      RAISE EXCEPTION NEW zcx_fi_vendor_not_found(
-        iv_lifnr = iv_lifnr
-        iv_bukrs = iv_bukrs ).
-    ENDIF.
-
-    " Fetch open (BSIK) + cleared (BSAK) items
-    DATA(lt_items) = fetch_vendor_items(
-      iv_lifnr = iv_lifnr
-      iv_bukrs = iv_bukrs
-      iv_gjahr = iv_gjahr ).
-
-    " Aggregate into balance
-    rs_balance = aggregate_balance(
-      it_items = lt_items
-      iv_lifnr = iv_lifnr
-      iv_bukrs = iv_bukrs
-      iv_gjahr = iv_gjahr ).
-  ENDMETHOD.
-
-
-  METHOD check_vendor_exists.
-    " Check vendor master + company code assignment (LFA1 + LFB1)
+  METHOD get_vendor_balance.
+    " Validate vendor exists in LFA1 + LFB1
     SELECT SINGLE lifnr
       FROM lfa1
-      INTO @DATA(lv_lifnr)
+      INTO @DATA(lv_check)
       WHERE lifnr = @iv_lifnr.
 
     IF sy-subrc <> 0.
-      rv_exists = abap_false.
-      RETURN.
+      RAISE EXCEPTION TYPE cx_no_entry_in_table
+        EXPORTING table_name = 'LFA1'.
     ENDIF.
 
     SELECT SINGLE lifnr
       FROM lfb1
-      INTO @lv_lifnr
+      INTO @lv_check
       WHERE lifnr = @iv_lifnr
         AND bukrs = @iv_bukrs.
 
-    rv_exists = COND #( WHEN sy-subrc = 0
-                        THEN abap_true
-                        ELSE abap_false ).
-  ENDMETHOD.
+    IF sy-subrc <> 0.
+      RAISE EXCEPTION TYPE cx_no_entry_in_table
+        EXPORTING table_name = 'LFB1'.
+    ENDIF.
 
-
-  METHOD fetch_vendor_items.
-    " Fetch open items from BSIK — only required fields
-    SELECT bukrs, lifnr, gjahr, waers, dmbtr, shkzg
-      FROM bsik
-      INTO TABLE @rt_items
-      WHERE bukrs = @iv_bukrs
-        AND lifnr = @iv_lifnr
-        AND gjahr = @iv_gjahr.
-
-    " Fetch cleared items from BSAK and append
-    SELECT bukrs, lifnr, gjahr, waers, dmbtr, shkzg
-      FROM bsak
-      APPENDING TABLE @rt_items
-      WHERE bukrs = @iv_bukrs
-        AND lifnr = @iv_lifnr
-        AND gjahr = @iv_gjahr.
-  ENDMETHOD.
-
-
-  METHOD aggregate_balance.
+    " Set header fields
     rs_balance-lifnr = iv_lifnr.
     rs_balance-bukrs = iv_bukrs.
     rs_balance-gjahr = iv_gjahr.
 
-    " Get company code currency
+    " Get company code currency from T001
     SELECT SINGLE waers
       FROM t001
       INTO @rs_balance-waers
@@ -890,6 +826,24 @@ CLASS zcl_ai_claude IMPLEMENTATION.
     IF sy-subrc <> 0.
       RETURN.
     ENDIF.
+
+    " Fetch open items (BSIK) — only required fields
+    DATA lt_items TYPE ty_t_vendor_items.
+
+    SELECT bukrs, lifnr, gjahr, waers, dmbtr, shkzg
+      FROM bsik
+      INTO TABLE @lt_items
+      WHERE bukrs = @iv_bukrs
+        AND lifnr = @iv_lifnr
+        AND gjahr = @iv_gjahr.
+
+    " Fetch cleared items (BSAK) and append
+    SELECT bukrs, lifnr, gjahr, waers, dmbtr, shkzg
+      FROM bsak
+      APPENDING TABLE @lt_items
+      WHERE bukrs = @iv_bukrs
+        AND lifnr = @iv_lifnr
+        AND gjahr = @iv_gjahr.
 
     " Currency converting factor for correct decimal handling
     DATA lv_factor TYPE i VALUE 1.
@@ -901,10 +855,10 @@ CLASS zcl_ai_claude IMPLEMENTATION.
       EXCEPTIONS
         OTHERS   = 1.
 
-    LOOP AT it_items ASSIGNING FIELD-SYMBOL(<ls_item>).
+    " Aggregate debit / credit
+    LOOP AT lt_items ASSIGNING FIELD-SYMBOL(<ls_item>).
       DATA(lv_amount) = <ls_item>-dmbtr * lv_factor.
 
-      " S = debit (borç), H = credit (alacak)
       IF <ls_item>-shkzg = 'S'.
         rs_balance-debit_total = rs_balance-debit_total + lv_amount.
       ELSE.
@@ -948,19 +902,13 @@ CLASS ltcl_vendor_balance DEFINITION
 
     METHODS setup.
 
-    METHODS test_vendor_not_found FOR TESTING
-      RAISING zcx_fi_vendor_not_found.
+    METHODS test_vendor_not_found FOR TESTING.
 
-    METHODS test_balance_debit_credit FOR TESTING
-      RAISING zcx_fi_vendor_not_found.
+    METHODS test_balance_debit_credit FOR TESTING.
 
-    METHODS test_balance_net_calculation FOR TESTING
-      RAISING zcx_fi_vendor_not_found.
+    METHODS test_balance_net_calculation FOR TESTING.
 
-    METHODS test_empty_items FOR TESTING
-      RAISING zcx_fi_vendor_not_found.
-
-    METHODS test_exception_message FOR TESTING.
+    METHODS test_empty_items FOR TESTING.
 
     METHODS test_handle_vendor_json FOR TESTING.
 
@@ -974,67 +922,40 @@ CLASS ltcl_vendor_balance IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD test_vendor_not_found.
-    " GIVEN: a non-existent vendor number
-    " WHEN:  get_vendor_balance is called
-    " THEN:  zcx_fi_vendor_not_found exception is raised
+    " GIVEN: non-existent vendor
+    " WHEN:  get_vendor_balance called
+    " THEN:  cx_no_entry_in_table raised
     TRY.
         mo_cut->get_vendor_balance(
           iv_lifnr = '9999999999'
           iv_bukrs = '0001'
           iv_gjahr = '2026' ).
         cl_abap_unit_assert=>fail( msg = 'Exception expected but not raised' ).
-      CATCH zcx_fi_vendor_not_found INTO DATA(lx_err).
+      CATCH cx_no_entry_in_table INTO DATA(lx_err).
         cl_abap_unit_assert=>assert_not_initial(
-          act = lx_err->mv_lifnr
-          msg = 'Vendor number should be set in exception' ).
+          act = lx_err
+          msg = 'Exception should be raised for missing vendor' ).
     ENDTRY.
   ENDMETHOD.
 
   METHOD test_balance_debit_credit.
-    " GIVEN: a valid vendor with open/cleared items
-    " WHEN:  get_vendor_balance is called
-    " THEN:  debit_total and credit_total are correctly summed
     " TODO: implement with test doubles / mock framework
-    cl_abap_unit_assert=>assert_true( act = abap_true msg = 'Stub — implement with test data' ).
+    cl_abap_unit_assert=>assert_true( act = abap_true msg = 'Stub' ).
   ENDMETHOD.
 
   METHOD test_balance_net_calculation.
-    " GIVEN: known debit and credit totals
-    " WHEN:  balance is calculated
-    " THEN:  net_balance = debit_total - credit_total
     " TODO: implement with test doubles / mock framework
-    cl_abap_unit_assert=>assert_true( act = abap_true msg = 'Stub — implement with test data' ).
+    cl_abap_unit_assert=>assert_true( act = abap_true msg = 'Stub' ).
   ENDMETHOD.
 
   METHOD test_empty_items.
-    " GIVEN: a valid vendor with no items in the fiscal year
-    " WHEN:  get_vendor_balance is called
-    " THEN:  all amounts should be zero
     " TODO: implement with test doubles / mock framework
-    cl_abap_unit_assert=>assert_true( act = abap_true msg = 'Stub — implement with test data' ).
-  ENDMETHOD.
-
-  METHOD test_exception_message.
-    " GIVEN: exception is raised for vendor 1234 in company 0001
-    " WHEN:  get_text is called
-    " THEN:  message contains vendor and company code
-    DATA(lx_err) = NEW zcx_fi_vendor_not_found(
-      iv_lifnr = '0000001234'
-      iv_bukrs = '0001' ).
-
-    DATA(lv_text) = lx_err->get_text( ).
-    cl_abap_unit_assert=>assert_char_cp(
-      act = lv_text
-      exp = '*1234*0001*'
-      msg = 'Exception message should contain vendor and company code' ).
+    cl_abap_unit_assert=>assert_true( act = abap_true msg = 'Stub' ).
   ENDMETHOD.
 
   METHOD test_handle_vendor_json.
-    " GIVEN: a valid JSON request with GET_VENDOR_BALANCE action
-    " WHEN:  handle_request processes it
-    " THEN:  response JSON contains code field
     " TODO: implement with mock server object
-    cl_abap_unit_assert=>assert_true( act = abap_true msg = 'Stub — implement with mock server' ).
+    cl_abap_unit_assert=>assert_true( act = abap_true msg = 'Stub' ).
   ENDMETHOD.
 
 ENDCLASS.
