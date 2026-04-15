@@ -1,6 +1,6 @@
 *&---------------------------------------------------------------------*
 *& Report:    Z_AI_FI_CUSTOMER_REPORT
-*& Açıklama:  FI müşteri bilgileri ALV raporu
+*& Açıklama:  Müşteri açık kalem yaşlandırma analizi ALV raporu
 *& Yazar:     Claude AI
 *& Tarih:     2026-04
 *& Paket:     ZAI_CLAUDE
@@ -13,7 +13,7 @@ INCLUDE z_ai_fi_cust_rpt_sel.   " Selection screen
 INCLUDE z_ai_fi_cust_rpt_f01.   " Local class ve iş mantığı
 
 INITIALIZATION.
-  " Default values set in selection screen include
+  p_keydt = sy-datum.
 
 START-OF-SELECTION.
   lcl_report=>run( ).

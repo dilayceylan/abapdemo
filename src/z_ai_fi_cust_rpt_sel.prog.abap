@@ -7,6 +7,8 @@
 *&---------------------------------------------------------------------*
 
 SELECTION-SCREEN BEGIN OF BLOCK b01 WITH FRAME TITLE TEXT-b01.
-  SELECT-OPTIONS: s_bukrs FOR gv_bukrs,
-                  s_kunnr FOR gv_kunnr.
+  SELECT-OPTIONS: s_bukrs FOR gv_bukrs OBLIGATORY,
+                  s_kunnr FOR gv_kunnr,
+                  s_ktokd FOR gv_ktokd.
+  PARAMETERS:     p_keydt TYPE sy-datum OBLIGATORY.
 SELECTION-SCREEN END OF BLOCK b01.
